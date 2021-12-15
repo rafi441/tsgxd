@@ -2,4 +2,4 @@
  
 decompiled GXD.lib (D3D9)
  
-![alt text](https://github.com/DOSexample/tsgxd/blob/main/screenshot/Screenshot_4.png?raw=true)
+![alt text](https://raw.githubusercontent.com/DOSexample/tsgxd/main/Screenshot/Screenshot_4.png)
