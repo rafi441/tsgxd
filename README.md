@@ -2,4 +2,4 @@
  
 decompiled GXD.lib (D3D9)
  
-![alt text](https://github.com/DOSexample/tsbabylon5/blob/main/screenshort/unknown.png?raw=true)
+![alt text](https://github.com/DOSexample/tsgxd/blob/main/screenshot/s.png?raw=true)
