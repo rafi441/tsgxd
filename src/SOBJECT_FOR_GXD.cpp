@@ -2,11 +2,11 @@
 BinaryReader* skinReader;
 void ClearSkinReader()
 {
-    if( skinReader )
-    {
-        delete skinReader;
-        skinReader = NULL;
-    }
+    //if( skinReader )
+    //{
+    //    delete skinReader;
+    //    skinReader = NULL;
+    //}
 }
 
 void SOBJECT_FOR_GXD::Init( void )
@@ -34,11 +34,12 @@ BOOL SOBJECT_FOR_GXD::Load( char* tFileName, BOOL tCheckCreateTexture, BOOL tChe
         return FALSE;
     }
 
-    auto r = skinReader = BinaryReader::LoadFile( tFileName );
-    if( r == NULL )
+    BinaryReader r;
+    BinaryReader::LoadFile(r, tFileName );
+    if( r.isError )
         return FALSE;
 
-    this->mSkinNum = r->ReadInt();
+    this->mSkinNum = r.ReadInt();
     printf( "%d\n", this->mSkinNum );
     if ( this->mSkinNum < 1 )
     {
@@ -49,7 +50,7 @@ BOOL SOBJECT_FOR_GXD::Load( char* tFileName, BOOL tCheckCreateTexture, BOOL tChe
     {
         SKIN_FOR_GXD skin;
         skin.Init();
-        if ( !skin.Load( r, tCheckCreateTexture, tCheckRemoveFileData ) )
+        if ( !skin.Load( &r, tCheckCreateTexture, tCheckRemoveFileData ) )
         {
             TRACE();
             this->Free();
@@ -58,7 +59,6 @@ BOOL SOBJECT_FOR_GXD::Load( char* tFileName, BOOL tCheckCreateTexture, BOOL tChe
         this->mSkin.push_back( skin );
     }
     this->mCheckValidState = TRUE;
-    delete skinReader;
     return TRUE;
 }
 

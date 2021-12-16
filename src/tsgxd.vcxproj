@@ -39,6 +39,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GXD.cpp" />
+    <ClCompile Include="POBJECT_FOR_GXD.cpp" />
+    <ClCompile Include="PSYSTEM_FOR_GXD.cpp" />
     <ClCompile Include="S01_Platform.cpp" />
     <ClCompile Include="MOTION_FOR_GXD.cpp" />
     <ClCompile Include="SKIN_FOR_GXD.cpp" />

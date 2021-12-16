@@ -3,6 +3,14 @@
 GXD mGXD;
 int binaryRefCount = 0;
 
+GXD::GXD( void )
+{
+}
+
+GXD::~GXD( void )
+{
+}
+
 BOOL Zlib::Decompress( ZlibDataPtr* z )
 {
     if( !z || z->IsError ) return FALSE;
@@ -32,22 +40,6 @@ D3DVERTEXELEMENT9 mVertexElementForSKIN2SHADOW[] = {
     {0, 28, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDINDICES, 0},
 };
 
-
-#ifdef USE_RAYLIB
-BOOL GXD::Init( void )
-{
-    mGXD.mTicksForRange = mGXD.mTicksForTime1 = mGXD.mTicksForTime2 = GetTime();
-    mGXD.mMainCamera.position = Vector3{ 0.0f, 5.0f, -28.0f }; // Camera position
-    mGXD.mMainCamera.target = Vector3{ 0.0f, 10.0f, 0.0f };     // Camera looking at point
-    mGXD.mMainCamera.up = Vector3{ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
-    mGXD.mMainCamera.fovy = 45.0f;                                // Camera field-of-view Y
-    mGXD.mMainCamera.projection = CAMERA_PERSPECTIVE;             // Camera mode type
-    SetCameraMode( mGXD.mMainCamera, CAMERA_FREE ); // Set a free camera mode
-    SetTargetFPS(60);
-    return TRUE;
-}
-#else
-
 D3DXVECTOR3* WINAPI D3DXVec3Normalize( D3DVECTOR *pOut, CONST D3DVECTOR*pV )
 {
     return ::D3DXVec3Normalize( (D3DXVECTOR3*)pOut, (D3DXVECTOR3*)pV );
@@ -67,7 +59,7 @@ BOOL GXD::Init( BOOL tCheckFullScreen, HINSTANCE tInstanceHandle, HWND tWindowHa
     this->mTextureOptionValue = 0;
     this->mSamplerOptionValue = 0;
     this->mNormalMapOptionValue = 2;
-    this->mLODLengthInfo[0] = tFarPlane - 1.0;
+    this->mLODLengthInfo[0] = tFarPlane - 1.0f;
     this->mLODLengthInfo[1] = tFarPlane;
     this->mFilterOptionValue = 1;
     this->mCheckDepthBias = 1;
@@ -118,50 +110,33 @@ BOOL GXD::Init( BOOL tCheckFullScreen, HINSTANCE tInstanceHandle, HWND tWindowHa
         *tRESULT = 5;
         return 0;
     }
-    if ( ( this->mDirect3D->CheckDeviceFormat(
-        0,
-        D3DDEVTYPE_HAL,
-        D3DFMT_X8R8G8B8,
-        0,
-        D3DRTYPE_TEXTURE,
-        D3DFMT_DXT1) < 0 )
-        || ( this->mDirect3D->CheckDeviceFormat(
-            0,
-            D3DDEVTYPE_HAL,
-            D3DFMT_X8R8G8B8,
-            0,
-            D3DRTYPE_TEXTURE,
-            D3DFMT_DXT3) < 0 )
-        || (this->mDirect3D->CheckDeviceFormat(
-            0,
-            D3DDEVTYPE_HAL,
-            D3DFMT_X8R8G8B8,
-            0,
-            D3DRTYPE_TEXTURE,
-            D3DFMT_DXT5) < 0)
+    if ( 
+        FAILED( this->mDirect3D->CheckDeviceFormat( 0, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, 0, D3DRTYPE_TEXTURE, D3DFMT_DXT1 ) ) || 
+        FAILED( this->mDirect3D->CheckDeviceFormat( 0, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, 0, D3DRTYPE_TEXTURE, D3DFMT_DXT3 ) ) || 
+        FAILED( this->mDirect3D->CheckDeviceFormat( 0, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, 0, D3DRTYPE_TEXTURE, D3DFMT_DXT5 ) )
         )
     {
-        MessageBoxA(0, "[INVALID_TEXTURE_FORMAT]", "GXD(ERROR)", 0x1000u);
+        MessageBoxA( 0, "[INVALID_TEXTURE_FORMAT]", "GXD(ERROR)", 0x1000u );
         *tRESULT = 6;
         return 0;
     }
-    if (this->mGraphicSupportInfo.VertexShaderVersion < 0xFFFE0200)
+    if ( this->mGraphicSupportInfo.VertexShaderVersion < 0xFFFE0200 )
     {
-        MessageBoxA(0, "[INVALID_VERTEX_SHADER_VERSION]", "GXD(ERROR)", 0x1000u);
+        MessageBoxA( 0, "[INVALID_VERTEX_SHADER_VERSION]", "GXD(ERROR)", 0x1000u );
         *tRESULT = 6;
         return 0;
     }
-    if (this->mGraphicSupportInfo.PixelShaderVersion < 0xFFFF0200)
+    if ( this->mGraphicSupportInfo.PixelShaderVersion < 0xFFFF0200 )
     {
-        MessageBoxA(0, "[INVALID_PIXEL_SHADER_VERSION]", "GXD(ERROR)", 0x1000u);
+        MessageBoxA( 0, "[INVALID_PIXEL_SHADER_VERSION]", "GXD(ERROR)", 0x1000u );
         *tRESULT = 6;
         return 0;
     }
-    if ((this->mGraphicSupportInfo.RasterCaps & 0x4000000) == 0)
+    if ( ( this->mGraphicSupportInfo.RasterCaps & 0x4000000 ) == 0 )
         this->mCheckDepthBias = 0;
-    if ((this->mGraphicSupportInfo.StencilCaps & 0x100) == 0)
+    if ( ( this->mGraphicSupportInfo.StencilCaps & 0x100 ) == 0 )
         this->mCheckTwoSideStencilFunction = 0;
-    memset(&this->mGraphicPresentParameters, 0, sizeof(this->mGraphicPresentParameters));
+    memset( &this->mGraphicPresentParameters, 0, sizeof( this->mGraphicPresentParameters ) );
     this->mGraphicPresentParameters.BackBufferWidth = tScreenXSize;
     this->mGraphicPresentParameters.BackBufferHeight = tScreenYSize;
     this->mGraphicPresentParameters.BackBufferFormat = D3DFMT_X8R8G8B8;
@@ -170,42 +145,46 @@ BOOL GXD::Init( BOOL tCheckFullScreen, HINSTANCE tInstanceHandle, HWND tWindowHa
     this->mGraphicPresentParameters.MultiSampleQuality = 0;
     this->mGraphicPresentParameters.SwapEffect = D3DSWAPEFFECT_DISCARD;
     this->mGraphicPresentParameters.hDeviceWindow = tWindowHandle;
-    this->mGraphicPresentParameters.Windowed = 1;
-    this->mGraphicPresentParameters.EnableAutoDepthStencil = 1;
+    this->mGraphicPresentParameters.Windowed = TRUE;
+    this->mGraphicPresentParameters.EnableAutoDepthStencil = TRUE;
     this->mGraphicPresentParameters.AutoDepthStencilFormat = D3DFMT_D24S8;
-    this->mGraphicPresentParameters.Flags = 2;
+    this->mGraphicPresentParameters.Flags = D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL;
     this->mGraphicPresentParameters.FullScreen_RefreshRateInHz = 0;
-    this->mGraphicPresentParameters.PresentationInterval = 0x80000000;
-    if ( this->mDirect3D->CreateDevice(
+    this->mGraphicPresentParameters.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+    if ( FAILED( this->mDirect3D->CreateDevice(
         0,
         D3DDEVTYPE_HAL,
         tWindowHandle,
-        64,
+        D3DCREATE_HARDWARE_VERTEXPROCESSING,
         &this->mGraphicPresentParameters,
-        &this->mGraphicDevice) < 0)
+        &this->mGraphicDevice ) ) )
     {
         *tRESULT = 7;
         return 0;
     }
-    if (D3DXCreateSprite(this->mGraphicDevice, &this->mGraphicSprite) < 0)
+    if ( FAILED( D3DXCreateSprite( this->mGraphicDevice, &this->mGraphicSprite ) ) )
     {
         *tRESULT = 8;
         return 0;
     }
-    if (D3DXCreateFontIndirectA(this->mGraphicDevice, tFontInfo, &this->mGraphicFont) < 0)
+    if ( FAILED( D3DXCreateFontIndirectA( this->mGraphicDevice, tFontInfo, &this->mGraphicFont ) ) )
     {
         *tRESULT = 9;
         return 0;
     }
-    if (this->mMaxParticleNum > 0)
+    this->mParticleVertexBuffer.clear();
+    if ( this->mMaxParticleNum > 0 )
     {
-        this->mParticleVertexBuffer = HEAP( PARTICLEVERTEX_FOR_GXD, (sizeof(PARTICLEVERTEX_FOR_GXD)*6) * this->mMaxParticleNum);
-        if (!this->mParticleVertexBuffer)
+        for ( index01 = 0; index01 < this->mMaxParticleNum*6; index01++ )
+        {
+            this->mParticleVertexBuffer.push_back( PARTICLEVERTEX_FOR_GXD() );
+        }
+        if ( this->mParticleVertexBuffer.size() != this->mMaxParticleNum*6 )
         {
             *tRESULT = 10;
             return 0;
         }
-        for (index01 = 0; index01 < this->mMaxParticleNum; ++index01)
+        for ( index01 = 0; index01 < this->mMaxParticleNum; index01++ )
         {
             this->mParticleVertexBuffer[6 * index01 + 0].mT[0] = 0.0f;
             this->mParticleVertexBuffer[6 * index01 + 0].mT[1] = 0.0f;
@@ -309,25 +288,25 @@ BOOL GXD::Init( BOOL tCheckFullScreen, HINSTANCE tInstanceHandle, HWND tWindowHa
         return 0;
     }
 
-    this->mCompressLibrary = LoadLibraryA("GXDCompress.dll");
+    this->mCompressLibrary = LoadLibraryA( "GXDCompress.dll" );
     if ( !this->mCompressLibrary )
     {
         *tRESULT = 21;
         return 0;
     }
-    this->mFCompressBound = (FCompressBound)GetProcAddress(this->mCompressLibrary, "compressBound");
+    this->mFCompressBound = (FCompressBound)GetProcAddress( this->mCompressLibrary, "compressBound" );
     if ( !this->mFCompressBound )
     {
         *tRESULT = 22;
         return 0;
     }
-    this->mFCompress = (FCompress)GetProcAddress(this->mCompressLibrary, "compress2");
+    this->mFCompress = (FCompress)GetProcAddress( this->mCompressLibrary, "compress2" );
     if ( !this->mFCompress )
     {
         *tRESULT = 23;
         return 0;
     }
-     this->mFUncompress = (FUncompress)GetProcAddress(this->mCompressLibrary, "uncompress");
+     this->mFUncompress = (FUncompress)GetProcAddress( this->mCompressLibrary, "uncompress" );
      if ( !this->mFUncompress )
      {
          *tRESULT = 24;
@@ -344,8 +323,6 @@ BOOL GXD::Init( BOOL tCheckFullScreen, HINSTANCE tInstanceHandle, HWND tWindowHa
      
      return 1;
 }
-
-#endif
 
 void GXD::Free( void )
 {
@@ -436,31 +413,31 @@ void GXD::EndForDrawing( void )
     this->mGraphicDevice->Present( 0, 0, 0, 0 );
 }
 
-void GXD::BeginForPOBJECT(void)
+void GXD::BeginForPOBJECT( void )
 {
     this->mGraphicDevice->SetRenderState( D3DRS_ZWRITEENABLE, 0 );
     this->mGraphicDevice->SetRenderState( D3DRS_ALPHABLENDENABLE, 1 );
     this->mGraphicDevice->SetRenderState( D3DRS_SRCBLEND, 5 );
     this->mGraphicDevice->SetRenderState( D3DRS_DESTBLEND, 6 );
     this->mGraphicDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, 4 );
-    D3DXCOLOR tAmbientValue = D3DXCOLOR::D3DXCOLOR( 0.0f, 0.0f, 0.0f, 0.0f );
-    this->SetAmbientLight( 1, tAmbientValue );
-    mDrawShadowVertexBuffer = 0;
+    this->SetAmbientLight( 1, D3DXCOLOR( 0.0f, 0.0f, 0.0f, 0.0f ) );
+    //*(&mShader[0].mDrawShadowVertexBuffer.GetDevice + this) = 0;
     this->mGraphicDevice->SetVertexShader( 0 );
     this->mGraphicDevice->SetPixelShader( 0 );
-    this->mGraphicDevice->SetFVF( 322 );
+    const DWORD fvf = D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX0 | D3DFVF_TEX1;//position, color, texcoord
+    this->mGraphicDevice->SetFVF( fvf );
     D3DXMatrixIdentity( &this->mWorldMatrix );
     this->mGraphicDevice->SetTransform( D3DTS_WORLD, &this->mWorldMatrix );
 }
 
-void GXD::EndForPOBJECT(void)
+void GXD::EndForPOBJECT( void )
 {
     this->SetDefaultLight();
-    this->mGraphicDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, 2);
-    this->mGraphicDevice->SetRenderState( D3DRS_DESTBLEND, 1);
-    this->mGraphicDevice->SetRenderState( D3DRS_SRCBLEND, 2);
-    this->mGraphicDevice->SetRenderState( D3DRS_ALPHABLENDENABLE, 0);
-    this->mGraphicDevice->SetRenderState( D3DRS_ZWRITEENABLE, 1);
+    this->mGraphicDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, 2 );
+    this->mGraphicDevice->SetRenderState( D3DRS_DESTBLEND, 1 );
+    this->mGraphicDevice->SetRenderState( D3DRS_SRCBLEND, 2 );
+    this->mGraphicDevice->SetRenderState( D3DRS_ALPHABLENDENABLE, 0 );
+    this->mGraphicDevice->SetRenderState( D3DRS_ZWRITEENABLE, 1 );
 }
 
 void GXD::SetDefaultMaterial( void )
@@ -476,6 +453,37 @@ void GXD::SetDefaultLight( void )
 
 void GXD::SetAmbientLight( int tAmbientSort, D3DXCOLOR tAmbientValue )
 {
+    float r;
+    float g;
+    float b;
+    D3DLIGHT9 tAmbientLight;
+
+    this->mGraphicDevice->LightEnable( 0, 1 );
+    memset( &tAmbientLight, 0, sizeof( tAmbientLight ) );
+    tAmbientLight.Type = D3DLIGHT_DIRECTIONAL;
+    tAmbientLight.Diffuse = D3DXCOLOR( 0.0f, 0.0f, 0.0f, 1.0f );
+    tAmbientLight.Specular = D3DXCOLOR( 0.0f, 0.0f, 0.0f, 1.0f );
+    if ( tAmbientSort == 1 )
+    {
+        r = this->mLight.Diffuse.r * 0.5 + this->mLight.Ambient.r;
+        g = this->mLight.Diffuse.g * 0.5 + this->mLight.Ambient.g;
+        b = this->mLight.Diffuse.b * 0.5 + this->mLight.Ambient.b;
+        tAmbientLight.Ambient = D3DXCOLOR( r, g, b, 1.0f );
+    }
+    else if ( tAmbientSort == 2 )
+    {
+        tAmbientLight.Ambient = tAmbientValue;
+    }
+    tAmbientLight.Position = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+    tAmbientLight.Direction = D3DXVECTOR3( -1.0f, -1.0f, 1.0f );
+    tAmbientLight.Range = 0.0f;
+    tAmbientLight.Falloff = 0.0f;
+    tAmbientLight.Attenuation0 = 0.0f;
+    tAmbientLight.Attenuation1 = 0.0f;
+    tAmbientLight.Attenuation2 = 0.0f;
+    tAmbientLight.Theta = 0.0f;
+    tAmbientLight.Phi = 0.0f;
+    this->mGraphicDevice->SetLight( 0, &tAmbientLight );
 }
 
 void GXD::SetDefaultTextureSamplerState( void )
@@ -624,4 +632,37 @@ BOOL GXD::Decompress( DWORD tCompressSize, BYTE *tCompress, DWORD tOriginalSize,
         printf( "%s\n", e.what() );
     }
     return FALSE;
+}
+
+BOOL GXD::CheckPointInFrustum( float tPoint[3] )
+{
+    if ( this->mFrustumPlane[0][0] * tPoint[0]
+        + this->mFrustumPlane[0][1] * tPoint[1]
+        + this->mFrustumPlane[0][2] * tPoint[2]
+        + this->mFrustumPlane[0][3] < 0.0f )
+        return 0;
+    if ( this->mFrustumPlane[1][0] * tPoint[0]
+        + this->mFrustumPlane[1][1] * tPoint[1]
+        + this->mFrustumPlane[1][2] * tPoint[2]
+        + this->mFrustumPlane[1][3] < 0.0f )
+        return 0;
+    if ( this->mFrustumPlane[2][0] * tPoint[0]
+        + this->mFrustumPlane[2][1] * tPoint[1]
+        + this->mFrustumPlane[2][2] * tPoint[2]
+        + this->mFrustumPlane[2][3] < 0.0f )
+        return 0;
+    if ( this->mFrustumPlane[3][0] * tPoint[0]
+        + this->mFrustumPlane[3][1] * tPoint[1]
+        + this->mFrustumPlane[3][2] * tPoint[2]
+        + this->mFrustumPlane[3][3] < 0.0f )
+        return 0;
+    if ( this->mFrustumPlane[4][0] * tPoint[0]
+        + this->mFrustumPlane[4][1] * tPoint[1]
+        + this->mFrustumPlane[4][2] * tPoint[2]
+        + this->mFrustumPlane[4][3] >= 0.0f )
+        return this->mFrustumPlane[5][0] * tPoint[0]
+        + this->mFrustumPlane[5][1] * tPoint[1]
+        + this->mFrustumPlane[5][2] * tPoint[2]
+        + this->mFrustumPlane[5][3] >= 0.0f;
+    return 0;
 }

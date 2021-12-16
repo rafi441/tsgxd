@@ -221,7 +221,6 @@ static int ShowError(const char* lpText, ...)
 
 LRESULT CALLBACK WndProc( HWND hWnd, UINT nMss, WPARAM wPrm, LPARAM lPrm )
 {
-    TRACR();
     switch ( nMss )
     {
     case WM_MOUSEMOVE:
@@ -249,7 +248,6 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT nMss, WPARAM wPrm, LPARAM lPrm )
     return 0;
 }
 
-Vector2 oldPosition;
 float oldWheel = 0.0f;
 BOOL lMouseDown = FALSE, rMouseDown = FALSE, wMouseDown = FALSE;
 BOOL ApplicationInput( void );
@@ -291,7 +289,8 @@ int main(void)
     return 0;
 }
 
-#ifndef USE_RAYLIB
+struct Vector2 { float x, y; };
+Vector2 oldPosition;
 Vector2 GetMousePosition()
 {
     return { 0.f, 0.f };
@@ -326,6 +325,7 @@ LRESULT CALLBACK WinMainProcedure( HWND hWnd, UINT nMss, WPARAM wPrm, LPARAM lPr
     }
     return DefWindowProcA( hWnd, nMss, wPrm, lPrm );
 }
+
 BOOL InitWindow( int width, int height, std::string name )
 {
     WNDCLASSEX wCls;
@@ -384,7 +384,6 @@ BOOL InitWindow( int width, int height, std::string name )
 
     return TRUE;
 }
-#endif
 
 BOOL ApplicationInput()
 {
@@ -444,6 +443,8 @@ BOOL ApplicationInput()
 
 SOBJECT_FOR_GXD sob;
 MOTION_FOR_GXD mot;
+PSYSTEM_FOR_GXD psy;
+POBJECT_FOR_GXD pob;
 BOOL ApplicationInit( void )
 {
     srand(_time32(0));
@@ -483,10 +484,13 @@ BOOL ApplicationInit( void )
     //}
 
     sob.Init();
-    sob.Load( "C001003000.SOBJECT", TRUE, TRUE );
+    //sob.Load( "C001003000.SOBJECT", TRUE, TRUE );
 
     mot.Init();
-    mot.Load( "C001001002.MOTION" );
+    //mot.Load( "C001001002.MOTION" );
+
+    pob.Init();
+    psy.Init();
 
     hPresentElapsedSeconds = mGXD.GetTotalElapsedSeconds();
     hPostSecondsForLogic = hPresentElapsedSeconds;
@@ -512,7 +516,6 @@ private:
     float frame = 0.0f;
     float maxFrame = 0.0f;
 public:
-    //set max frame
     void SetMax( float tMaxFrame )
     {
         maxFrame = tMaxFrame;
@@ -521,12 +524,9 @@ public:
     {
         frame = dTime * 30.0f + frame;
         if( maxFrame != 0.0f && frame >= maxFrame )
-            frame = 1.0f;
+            frame = 1 + ( frame - maxFrame );
     }
-    //get frame float
-    float FrameF() const { return frame; }
-    //get frame number
-    int FrameI() const { return (int)frame; }
+    float GetFrame() const { return frame; }
 };
 FrameTime mActFrame;
 void CustomDraw( float dTime )
@@ -536,7 +536,21 @@ void CustomDraw( float dTime )
 
     mGXD.BeginForDrawing();
 
-    sob.TestDraw( &mot, mActFrame.FrameI() );
+
+    sob.TestDraw( &mot, mActFrame.GetFrame() );
+
+    mGXD.BeginForPOBJECT();
+
+    float tCoord[3] = { 0, 0, 0 };
+    float tAngle[3] = { 0, 0, 0 };
+
+    psy.Load("012.PARTICLE", TRUE, TRUE);
+    pob.Set( &psy );
+    pob.Update(dTime, tCoord, tAngle);
+    pob.SetScale( 10, 10, 10 );
+    pob.Draw();
+
+    mGXD.EndForPOBJECT();
 
     mGXD.EndForDrawing();
 }

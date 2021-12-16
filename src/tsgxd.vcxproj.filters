@@ -16,11 +16,19 @@
       <Filter>GXD</Filter>
     </ClCompile>
     <ClCompile Include="S01_Platform.cpp" />
-    <ClCompile Include="MOTION_FOR_GXD.cpp" />
     <ClCompile Include="TEXTURE_FOR_GXD.cpp">
       <Filter>GXD</Filter>
     </ClCompile>
     <ClCompile Include="SKIN_FOR_GXD.cpp">
+      <Filter>GXD</Filter>
+    </ClCompile>
+    <ClCompile Include="MOTION_FOR_GXD.cpp">
+      <Filter>GXD</Filter>
+    </ClCompile>
+    <ClCompile Include="POBJECT_FOR_GXD.cpp">
+      <Filter>GXD</Filter>
+    </ClCompile>
+    <ClCompile Include="PSYSTEM_FOR_GXD.cpp">
       <Filter>GXD</Filter>
     </ClCompile>
   </ItemGroup>
@@ -28,7 +36,9 @@
     <ClInclude Include="GXD.h">
       <Filter>GXD</Filter>
     </ClInclude>
-    <ClInclude Include="DEFINE.h" />
     <ClInclude Include="H01_Platform.h" />
+    <ClInclude Include="DEFINE.h">
+      <Filter>GXD</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

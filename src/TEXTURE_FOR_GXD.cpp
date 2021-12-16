@@ -1,15 +1,5 @@
 #include "GXD.h"
 
-BinaryReader* textureReader;
-void ClearTextureReader()
-{
-	if ( textureReader )
-	{
-		delete textureReader;
-		textureReader = NULL;
-	}
-}
-
 void TEXTURE_FOR_GXD::Init( void )
 {
 	this->mCheckValidState = FALSE;
@@ -18,7 +8,6 @@ void TEXTURE_FOR_GXD::Init( void )
 void TEXTURE_FOR_GXD::Free( void )
 {
 	this->mCheckValidState = FALSE;
-	ClearTextureReader();
 }
 
 BOOL TEXTURE_FOR_GXD::Load( BinaryReader* r, BOOL tCheckCreateTexture, BOOL tCheckRemoveFileData )
@@ -30,32 +19,29 @@ BOOL TEXTURE_FOR_GXD::Load( BinaryReader* r, BOOL tCheckCreateTexture, BOOL tChe
 	if( !this->mFileDataSize )
 		return TRUE;
 
-	auto z = new ZlibDataPtr( r );
+	auto z = new ZlibDataPtr( r, FALSE );
 	if ( !Zlib::Decompress( z ) )
 	{
-		TRACE();
 		this->Free();
 		return FALSE;
 	}
 
-	auto sr = BinaryReader::Scope( __FUNCTION__, z->tOriginal, z->tOriginalSize, 0, false );
+	auto sr = *new BinaryReader( __FUNCTION__, z->tOriginal, z->tOriginalSize, 0, false );
 	this->mFileData = sr.ReadBytes( this->mFileDataSize );
 	this->mProcessModeCase = sr.ReadInt();
 	this->mAlphaModeCase = sr.ReadInt();
 
-	TRACE();
-	if ( D3DXGetImageInfoFromFileInMemory( this->mFileData, this->mFileDataSize, &this->mTextureInfo ) < 0 )
+	if ( FAILED( D3DXGetImageInfoFromFileInMemory( this->mFileData, this->mFileDataSize, &this->mTextureInfo ) ) )
 	{
 		this->Free();
 		return FALSE;
 	}
-	TRACE();
 
 	if ( this->mTextureInfo.Format != D3DFMT_DXT1
 		&& this->mTextureInfo.Format != D3DFMT_DXT2
 		&& this->mTextureInfo.Format != D3DFMT_DXT3
 		&& this->mTextureInfo.Format != D3DFMT_DXT5
-		|| D3DXCreateTextureFromFileInMemoryEx(
+		|| SUCCEEDED( D3DXCreateTextureFromFileInMemoryEx(
 			mGXD.mGraphicDevice,
 			this->mFileData,
 			this->mFileDataSize,
@@ -70,12 +56,10 @@ BOOL TEXTURE_FOR_GXD::Load( BinaryReader* r, BOOL tCheckCreateTexture, BOOL tChe
 			0,
 			0,
 			0,
-			&this->mTexture) >= 0 )
+			&this->mTexture ) ) )
 	{
-		TRACE();
 		//goto LABEL_93;
 	}
-	TRACE();
 
 	if ( tCheckRemoveFileData )
 	{
@@ -84,6 +68,5 @@ BOOL TEXTURE_FOR_GXD::Load( BinaryReader* r, BOOL tCheckCreateTexture, BOOL tChe
 	}
 
 	this->mCheckValidState = TRUE;
-	ClearTextureReader();
 	return TRUE;
 }

@@ -35,11 +35,6 @@ void SKIN_FOR_GXD::Free( void )
     int i; // [esp+4h] [ebp-4h]
 
     this->mCheckValidState = 0;
-    SAFE_FREE( this->mVertex );
-    SAFE_FREE( this->mNormal );
-    SAFE_FREE( this->mUV );
-    SAFE_FREE( this->mWeight );
-    SAFE_FREE( this->mTris );
     this->mVertexBuffer.clear();
     this->mWeightBuffer.clear();
     this->mIndexBuffer.clear();
@@ -56,7 +51,6 @@ void SKIN_FOR_GXD::Free( void )
     {
         for (i = 0; i < this->mTextureAnimationNum; ++i)
             this->mTextureAnimation[i].Free();
-        SAFE_FREE( this->mTextureAnimation );
     }
     this->mScaleValue.x = 1.0f;
     this->mScaleValue.y = 1.0f;
@@ -90,11 +84,10 @@ BOOL SKIN_FOR_GXD::Load( BinaryReader* r, BOOL tCheckCreateTexture, BOOL tCheckR
     printf( "%d:%d\n", z->tOriginalSize, z->tCompressSize );
     if ( !Zlib::Decompress( z ) )
     {
-        TRACE();
         return FALSE;
     }
     
-    auto sr = BinaryReader::Scope( __FUNCTION__, z->tOriginal, z->tOriginalSize );
+    auto sr = *new BinaryReader( __FUNCTION__, z->tOriginal, z->tOriginalSize );
     this->mEffect = sr.ReadStruct<SKINEFFECT_FOR_GXD>();
     this->mVertexNum = sr.ReadInt();
     this->mUVNum = sr.ReadInt();
@@ -130,24 +123,24 @@ BOOL SKIN_FOR_GXD::Load( BinaryReader* r, BOOL tCheckCreateTexture, BOOL tCheckR
             if (v36[2 * i + 1] < v43[1])
                 v43[1] = v36[2 * i + 1];
         }
-        this->mVertexBufferForBillboard[0].mN[0] = 0.0;
-        this->mVertexBufferForBillboard[0].mN[1] = 0.0;
-        this->mVertexBufferForBillboard[0].mN[2] = 0.0;
+        this->mVertexBufferForBillboard[0].mN[0] = 0.0f;
+        this->mVertexBufferForBillboard[0].mN[1] = 0.0f;
+        this->mVertexBufferForBillboard[0].mN[2] = 0.0f;
         this->mVertexBufferForBillboard[0].mT[0] = v43[0];
         this->mVertexBufferForBillboard[0].mT[1] = v41[1];
-        this->mVertexBufferForBillboard[1].mN[0] = 0.0;
-        this->mVertexBufferForBillboard[1].mN[1] = 0.0;
-        this->mVertexBufferForBillboard[1].mN[2] = 0.0;
+        this->mVertexBufferForBillboard[1].mN[0] = 0.0f;
+        this->mVertexBufferForBillboard[1].mN[1] = 0.0f;
+        this->mVertexBufferForBillboard[1].mN[2] = 0.0f;
         this->mVertexBufferForBillboard[1].mT[0] = v43[0];
         this->mVertexBufferForBillboard[1].mT[1] = v43[1];
-        this->mVertexBufferForBillboard[2].mN[0] = 0.0;
-        this->mVertexBufferForBillboard[2].mN[1] = 0.0;
-        this->mVertexBufferForBillboard[2].mN[2] = 0.0;
+        this->mVertexBufferForBillboard[2].mN[0] = 0.0f;
+        this->mVertexBufferForBillboard[2].mN[1] = 0.0f;
+        this->mVertexBufferForBillboard[2].mN[2] = 0.0f;
         this->mVertexBufferForBillboard[2].mT[0] = v41[0];
         this->mVertexBufferForBillboard[2].mT[1] = v41[1];
-        this->mVertexBufferForBillboard[3].mN[0] = 0.0;
-        this->mVertexBufferForBillboard[3].mN[1] = 0.0;
-        this->mVertexBufferForBillboard[3].mN[2] = 0.0;
+        this->mVertexBufferForBillboard[3].mN[0] = 0.0f;
+        this->mVertexBufferForBillboard[3].mN[1] = 0.0f;
+        this->mVertexBufferForBillboard[3].mN[2] = 0.0f;
         this->mVertexBufferForBillboard[3].mT[0] = v41[0];
         this->mVertexBufferForBillboard[3].mT[1] = v43[1];
     }
